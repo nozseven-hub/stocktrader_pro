@@ -21,22 +21,36 @@
   .tab.active {background:#444; font-weight:600;}
   .tab-content {display:none;}
   .tab-content.active {display:block;}
-  /* Map + controls */
-  #map {height:80vh;}
-  .controls{
-    position:absolute; top:60px; right:10px; z-index:1000;
-    background:rgba(255,255,255,0.95); border-radius:10px; padding:10px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.12); backdrop-filter: blur(2px);
-    font-size:14px; width: 180px;
+  /* Map */
+  #map {height:80vh; position:relative;}
+  /* Toggle buttons */
+  .toggle-btn{
+    position:absolute; z-index:1100; right:10px;
+    background:#ffffff; border:1px solid #d9d9d9; border-radius:999px;
+    padding:8px 12px; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.12);
   }
-  .controls label{display:block; margin:6px 0 2px; font-weight:600;}
-  .controls select, .controls button{width:100%; padding:6px; font-size:14px;}
-  .controls button{margin-top:6px; border:1px solid #bbb; border-radius:6px; background:#f5f5f5;}
-  .controls button:active{background:#e8e8e8;}
-  /* Legends */
-  .legend{background:#fff; padding:10px; border-radius:8px; font-size:13px; line-height:18px; color:#333;
-    box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+  #filtersToggle{top:60px;}
+  #legendToggle{bottom:10px;}
+  /* Panels (hidden by default) */
+  .panel{
+    position:absolute; z-index:1099; right:10px; width: 190px;
+    background:rgba(255,255,255,0.96); border:1px solid #e5e5e5; border-radius:10px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15); backdrop-filter: blur(2px);
+    overflow:hidden; max-height:0; opacity:0; pointer-events:none;
+    transition: max-height 280ms ease, opacity 220ms ease;
+  }
+  .panel.open{max-height: 380px; opacity:1; pointer-events:auto;}
+  /* Filters panel content */
+  .filters-panel{top:100px; padding:10px;}
+  .filters-panel label{display:block; margin:6px 0 2px; font-weight:600; font-size:13px;}
+  .filters-panel select, .filters-panel button{width:100%; padding:6px; font-size:14px; margin-bottom:6px;}
+  .filters-panel button{border:1px solid #bbb; border-radius:6px; background:#f5f5f5;}
+  .filters-panel button:active{background:#ececec;}
+  /* Legend panel content */
+  .legend-panel{bottom:50px; padding:10px; font-size:13px; line-height:18px; color:#333;}
+  .legend-title{font-weight:700; margin-bottom:6px;}
   .dot{display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend-section{margin-bottom:8px; padding-bottom:6px; border-bottom:1px dashed #e6e6e6;}
   /* Plan tab */
   #plan {padding:12px; max-width:1000px; margin:0 auto;}
   #plan h3 {margin-top:4px;}
@@ -50,7 +64,8 @@
   .badge{display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; background:#efefef; margin-left:6px;}
   .cat-emoji{margin-right:6px;}
   @media (max-width:420px){
-    .controls{top:70px; right:8px; width: 170px;}
+    #filtersToggle{top:64px;}
+    .filters-panel{top:104px;}
   }
 </style>
 </head>
@@ -64,37 +79,64 @@
 
 <!-- MAP TAB -->
 <div id="mapTab" class="tab-content active">
-  <div id="map"></div>
-  <div class="controls">
-    <label>Plan</label>
-    <select id="planSelect">
-      <option value="A">Plan A (Lyon + Beaujolais)</option>
-      <option value="B">Plan B (Lyon only)</option>
-    </select>
+  <div id="map">
+    <!-- Toggle buttons -->
+    <button id="filtersToggle" class="toggle-btn">⚙️ Filters</button>
+    <button id="legendToggle" class="toggle-btn">📖 Legend</button>
 
-    <label>Day</label>
-    <select id="daySelect">
-      <option value="all">All Days</option>
-      <option value="day1">Day 1</option>
-      <option value="day2">Day 2</option>
-      <option value="day3">Day 3</option>
-      <option value="day4">Day 4</option>
-      <option value="day5">Day 5</option>
-    </select>
+    <!-- Filters panel (hidden by default) -->
+    <div id="filtersPanel" class="panel filters-panel">
+      <label>Plan</label>
+      <select id="planSelect">
+        <option value="A">Plan A (Lyon + Beaujolais)</option>
+        <option value="B">Plan B (Lyon only)</option>
+      </select>
 
-    <label>Category</label>
-    <select id="catSelect">
-      <option value="all">All Categories</option>
-      <option value="sight">Sights</option>
-      <option value="museum">Museums</option>
-      <option value="church">Churches</option>
-      <option value="market">Markets</option>
-      <option value="restaurant">Restaurants</option>
-      <option value="wine">Wine/Wineries</option>
-      <option value="home">Home</option>
-    </select>
+      <label>Day</label>
+      <select id="daySelect">
+        <option value="all">All Days</option>
+        <option value="day1">Day 1</option>
+        <option value="day2">Day 2</option>
+        <option value="day3">Day 3</option>
+        <option value="day4">Day 4</option>
+        <option value="day5">Day 5</option>
+      </select>
 
-    <button id="clearFilters">Clear All Filters</button>
+      <label>Category</label>
+      <select id="catSelect">
+        <option value="all">All Categories</option>
+        <option value="sight">Sights</option>
+        <option value="museum">Museums</option>
+        <option value="church">Churches</option>
+        <option value="market">Markets</option>
+        <option value="restaurant">Restaurants</option>
+        <option value="wine">Wine/Wineries</option>
+        <option value="home">Home</option>
+      </select>
+
+      <button id="clearFilters">Clear All Filters</button>
+    </div>
+
+    <!-- Legend panel (hidden by default) -->
+    <div id="legendPanel" class="panel legend-panel">
+      <div class="legend-title">Legend</div>
+      <div class="legend-section">
+        <div><span class="dot" style="background:#d9534f"></span> Day 1</div>
+        <div><span class="dot" style="background:#0275d8"></span> Day 2</div>
+        <div><span class="dot" style="background:#5cb85c"></span> Day 3</div>
+        <div><span class="dot" style="background:#f0ad4e"></span> Day 4</div>
+        <div><span class="dot" style="background:#613d7c"></span> Day 5</div>
+      </div>
+      <div>
+        🍽️ Restaurant<br/>
+        🛍️ Market / Food Hall<br/>
+        🖼️ Museum<br/>
+        ⛪ Church / Cathedral<br/>
+        🗺️ Sights / Walks<br/>
+        🍷 Winery / Tasting<br/>
+        🏠 Home
+      </div>
+    </div>
   </div>
 </div>
 
@@ -114,6 +156,8 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.tab).classList.add("active");
+    // Invalidate map when returning to map tab
+    if(tab.dataset.tab === "mapTab"){ setTimeout(()=>map.invalidateSize(), 100); }
   });
 });
 
@@ -121,8 +165,23 @@ document.querySelectorAll(".tab").forEach(tab=>{
 const map = L.map("map", {center:[45.764, 4.8357], zoom:13});
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution:"© OpenStreetMap"}).addTo(map);
 
+/* Toggle panels */
+const filtersToggle = document.getElementById("filtersToggle");
+const legendToggle  = document.getElementById("legendToggle");
+const filtersPanel  = document.getElementById("filtersPanel");
+const legendPanel   = document.getElementById("legendPanel");
+
+filtersToggle.addEventListener("click", ()=>{
+  filtersPanel.classList.toggle("open");
+  setTimeout(()=>map.invalidateSize(), 280);
+});
+legendToggle.addEventListener("click", ()=>{
+  legendPanel.classList.toggle("open");
+  setTimeout(()=>map.invalidateSize(), 280);
+});
+
 /* Day colors + category icons */
-const dayColors = {day1:"red", day2:"blue", day3:"green", day4:"orange", day5:"purple"};
+const dayColors = {day1:"#d9534f", day2:"#0275d8", day3:"#5cb85c", day4:"#f0ad4e", day5:"#613d7c"};
 const catIconNames = {
   sight:"fa-eye",
   museum:"fa-university",
@@ -133,9 +192,12 @@ const catIconNames = {
   home:"fa-home"
 };
 function getIcon(category, day){
+  // Map markerColor to leaflet-awesome-markers presets (rough matches)
+  const colorMap = { "#d9534f":"red", "#0275d8":"blue", "#5cb85c":"green", "#f0ad4e":"orange", "#613d7c":"purple" };
+  const markerColor = colorMap[dayColors[day]] || "cadetblue";
   return L.AwesomeMarkers.icon({
     icon: catIconNames[category] || "fa-map-marker",
-    markerColor: dayColors[day] || "cadetblue",
+    markerColor,
     prefix:"fa",
     iconColor:"white"
   });
@@ -146,7 +208,7 @@ const catEmoji = {sight:"🗺️", museum:"🖼️", church:"⛪", restaurant:"�
 /* Home */
 const HOME = {lat:45.7703, lng:4.8328, name:"Home: 12 Rue Burdeau, 69001 Lyon", cat:"home"};
 
-/* Helper to build POI */
+/* Helper */
 function P(lat,lng,name,cat,opts={}){return Object.assign({lat,lng,name,cat},opts);}
 
 /* Plan A (Lyon + Beaujolais) — 5 days */
@@ -181,7 +243,7 @@ const PlanA = {
   ]
 };
 
-/* Plan B (Lyon only) — 5 days, Day 4 replaces wineries with more Lyon highlights */
+/* Plan B (Lyon only) — 5 days, Day 4 packed with more Lyon sights */
 const PlanB = {
   day1: [
     P(45.7629,4.8270,"Vieux Lyon (Old Town)","sight",{notes:"Explore Renaissance streets & traboules", dur:"1.5h"}),
@@ -213,25 +275,31 @@ const PlanB = {
   ]
 };
 
-/* Bundle plans for selectors */
+/* Bundle plans */
 const plans = { A: PlanA, B: PlanB };
 
-/* ---------- Filters & Rendering ---------- */
+/* ---------- Rendering ---------- */
 let currentPlan = "A";
 let currentDay = "all";
 let currentCat = "all";
 let markers = [];
 
-function clearMarkers(){
-  markers.forEach(m=>map.removeLayer(m));
-  markers = [];
-}
-
+function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers = []; }
 function addHome(){
   const hm = L.marker([HOME.lat, HOME.lng], {icon:getIcon("home","day1")})
     .addTo(map)
     .bindPopup(`<b>${HOME.name}</b>`);
   markers.push(hm);
+}
+
+function popupHTML(p, dayKey){
+  let h = `<b>${p.name}</b><br>Day ${dayKey.replace("day","")}`;
+  if(p.dur)  h += `<br>⏱ ${p.dur}`;
+  if(p.notes) h += `<br>${p.notes}`;
+  if(p.phone) h += `<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`;
+  if(p.website) h += `<br>🌐 <a href="${p.website}" target="_blank">Website</a>`;
+  if(p.instagram) h += `<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`;
+  return h;
 }
 
 function refreshMap(){
@@ -252,16 +320,6 @@ function refreshMap(){
   renderPlanText();
 }
 
-function popupHTML(p, dayKey){
-  let h = `<b>${p.name}</b><br>Day ${dayKey.replace("day","")}`;
-  if(p.dur)  h += `<br>⏱ ${p.dur}`;
-  if(p.notes) h += `<br>${p.notes}`;
-  if(p.phone) h += `<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`;
-  if(p.website) h += `<br>🌐 <a href="${p.website}" target="_blank">Website</a>`;
-  if(p.instagram) h += `<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`;
-  return h;
-}
-
 function renderPlanText(){
   const plan = plans[currentPlan];
   const container = document.getElementById("planDetails");
@@ -275,44 +333,40 @@ function renderPlanText(){
     dayDiv.className = "day-section";
     dayDiv.innerHTML = `<h4 class="day-title">Day ${dayKey.replace("day","")}</h4>`;
 
-    const ul = document.createElement("div");
-
+    const listDiv = document.createElement("div");
     plan[dayKey].forEach(p=>{
       if(currentCat !== "all" && currentCat !== p.cat) return;
-      const li = document.createElement("div");
-      li.className = "poi";
-      li.innerHTML = `
-        <div class="name">${catEmoji[p.cat] || ""} ${p.name}
-          <span class="badge" title="Category">${p.cat}</span>
+      const item = document.createElement("div");
+      item.className = "poi";
+      item.innerHTML = `
+        <div class="name">${(catEmoji[p.cat]||"")} ${p.name}
+          <span class="badge">${p.cat}</span>
         </div>
         <div class="meta">
-          ${p.dur ? `⏱ ${p.dur}` : ""} ${p.dur && p.notes ? " • " : ""} ${p.notes || ""}
+          ${p.dur ? `⏱ ${p.dur}` : ""}${p.dur && p.notes ? " • " : ""}${p.notes || ""}
         </div>
         <div class="links">
           ${p.phone ? `☎ <a href="tel:${p.phone}">${p.phone}</a>` : ""}
           ${p.website ? `🌐 <a href="${p.website}" target="_blank">Website</a>` : ""}
           ${p.instagram ? `📸 <a href="${p.instagram}" target="_blank">Instagram</a>` : ""}
-        </div>
-      `;
-      ul.appendChild(li);
+        </div>`;
+      listDiv.appendChild(item);
     });
-    dayDiv.appendChild(ul);
+
+    dayDiv.appendChild(listDiv);
     container.appendChild(dayDiv);
   }
 }
 
 /* ---------- Selectors ---------- */
 document.getElementById("planSelect").addEventListener("change", e=>{
-  currentPlan = e.target.value;
-  refreshMap();
+  currentPlan = e.target.value; refreshMap();
 });
 document.getElementById("daySelect").addEventListener("change", e=>{
-  currentDay = e.target.value;
-  refreshMap();
+  currentDay = e.target.value; refreshMap();
 });
 document.getElementById("catSelect").addEventListener("change", e=>{
-  currentCat = e.target.value;
-  refreshMap();
+  currentCat = e.target.value; refreshMap();
 });
 document.getElementById("clearFilters").addEventListener("click", ()=>{
   currentPlan="A"; currentDay="all"; currentCat="all";
@@ -321,37 +375,6 @@ document.getElementById("clearFilters").addEventListener("click", ()=>{
   document.getElementById("catSelect").value="all";
   refreshMap();
 });
-
-/* ---------- Legends ---------- */
-const legendDays = L.control({position:"bottomleft"});
-legendDays.onAdd = function(){
-  const div = L.DomUtil.create("div","legend");
-  div.innerHTML =
-    `<b>Days</b><br>
-     <span class="dot" style="background:${dayColors.day1}"></span> Day 1<br>
-     <span class="dot" style="background:${dayColors.day2}"></span> Day 2<br>
-     <span class="dot" style="background:${dayColors.day3}"></span> Day 3<br>
-     <span class="dot" style="background:${dayColors.day4}"></span> Day 4<br>
-     <span class="dot" style="background:${dayColors.day5}"></span> Day 5`;
-  return div;
-};
-legendDays.addTo(map);
-
-const legendCats = L.control({position:"bottomright"});
-legendCats.onAdd = function(){
-  const div = L.DomUtil.create("div","legend");
-  div.innerHTML =
-    `<b>Categories</b><br>
-     ${catEmoji.restaurant} Restaurant<br>
-     ${catEmoji.market} Market / Food Hall<br>
-     ${catEmoji.museum} Museum<br>
-     ${catEmoji.church} Church / Cathedral<br>
-     ${catEmoji.sight} Sights / Walks<br>
-     ${catEmoji.wine} Winery / Tasting<br>
-     ${catEmoji.home} Home`;
-  return div;
-};
-legendCats.addTo(map);
 
 /* ---------- Init ---------- */
 refreshMap();
