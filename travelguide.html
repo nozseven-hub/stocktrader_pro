@@ -5,93 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Lyon Travel Guide</title>
 
-<!-- Leaflet & Awesome Markers & Font Awesome -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
-
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
 
 <style>
   html, body {height:100%; margin:0; padding:0; font-family: system-ui, -apple-system, Arial, sans-serif;}
-  /* Tabs */
   .tabs {display:flex; background:#222; color:#fff;}
-  .tab {flex:1; text-align:center; padding:12px; cursor:pointer; user-select:none;}
+  .tab {flex:1; text-align:center; padding:12px; cursor:pointer;}
   .tab.active {background:#444; font-weight:600;}
   .tab-content {display:none;}
   .tab-content.active {display:block;}
-  /* Map */
   #map {height:80vh; position:relative;}
-  /* Toggle buttons */
-  .toggle-btn{
-    position:absolute; z-index:1100; right:10px;
-    background:#ffffff; border:1px solid #d9d9d9; border-radius:999px;
-    padding:8px 12px; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.12);
-  }
+
+  /* Toggles */
+  .toggle-btn{position:absolute; z-index:1100; right:10px;
+    background:#fff; border:1px solid #d9d9d9; border-radius:999px;
+    padding:8px 12px; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.12);}
   #filtersToggle{top:60px;}
   #legendToggle{bottom:10px;}
-  /* Panels (hidden by default) */
-  .panel{
-    position:absolute; z-index:1099; right:10px; width: 190px;
+  .panel{position:absolute; z-index:1099; right:10px; width:240px;
     background:rgba(255,255,255,0.96); border:1px solid #e5e5e5; border-radius:10px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.15); backdrop-filter: blur(2px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
     overflow:hidden; max-height:0; opacity:0; pointer-events:none;
-    transition: max-height 280ms ease, opacity 220ms ease;
-  }
-  .panel.open{max-height: 380px; opacity:1; pointer-events:auto;}
-  /* Filters panel content */
+    transition: max-height 280ms ease, opacity 220ms ease;}
+  .panel.open{max-height:520px; opacity:1; pointer-events:auto;}
   .filters-panel{top:100px; padding:10px;}
   .filters-panel label{display:block; margin:6px 0 2px; font-weight:600; font-size:13px;}
   .filters-panel select, .filters-panel button{width:100%; padding:6px; font-size:14px; margin-bottom:6px;}
   .filters-panel button{border:1px solid #bbb; border-radius:6px; background:#f5f5f5;}
-  .filters-panel button:active{background:#ececec;}
-  /* Legend panel content */
   .legend-panel{bottom:50px; padding:10px; font-size:13px; line-height:18px; color:#333;}
   .legend-title{font-weight:700; margin-bottom:6px;}
   .dot{display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:6px; vertical-align:middle;}
   .legend-section{margin-bottom:8px; padding-bottom:6px; border-bottom:1px dashed #e6e6e6;}
+
   /* Plan tab */
   #plan {padding:12px; max-width:1000px; margin:0 auto;}
-  #plan h3 {margin-top:4px;}
   .day-section{background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px; margin:10px 0;}
   .day-title{margin:0 0 10px; padding-bottom:6px; border-bottom:1px dashed #ddd; font-size:18px}
   .poi{margin:10px 0;}
-  .poi .name{font-weight:600;}
+  .poi .name{font-weight:600; display:flex; align-items:center; justify-content:space-between;}
+  .poi .name .openmaps{font-size:12px; background:#eee; border-radius:6px; padding:2px 6px;}
   .meta{color:#555; font-size:13px;}
   .links a{color:#0366d6; text-decoration:none; margin-right:8px;}
-  .links a:hover{text-decoration:underline;}
   .badge{display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; background:#efefef; margin-left:6px;}
-  .cat-emoji{margin-right:6px;}
-  @media (max-width:420px){
-    #filtersToggle{top:64px;}
-    .filters-panel{top:104px;}
-  }
 </style>
 </head>
 <body>
 
-<!-- Tabs -->
 <div class="tabs">
   <div class="tab active" data-tab="mapTab">Map</div>
   <div class="tab" data-tab="planTab">Plan</div>
 </div>
 
-<!-- MAP TAB -->
 <div id="mapTab" class="tab-content active">
   <div id="map">
-    <!-- Toggle buttons -->
     <button id="filtersToggle" class="toggle-btn">⚙️ Filters</button>
     <button id="legendToggle" class="toggle-btn">📖 Legend</button>
 
-    <!-- Filters panel (hidden by default) -->
     <div id="filtersPanel" class="panel filters-panel">
       <label>Plan</label>
       <select id="planSelect">
         <option value="A">Plan A (Lyon + Beaujolais)</option>
         <option value="B">Plan B (Lyon only)</option>
       </select>
-
       <label>Day</label>
       <select id="daySelect">
         <option value="all">All Days</option>
@@ -101,7 +80,6 @@
         <option value="day4">Day 4</option>
         <option value="day5">Day 5</option>
       </select>
-
       <label>Category</label>
       <select id="catSelect">
         <option value="all">All Categories</option>
@@ -113,11 +91,9 @@
         <option value="wine">Wine/Wineries</option>
         <option value="home">Home</option>
       </select>
-
       <button id="clearFilters">Clear All Filters</button>
     </div>
 
-    <!-- Legend panel (hidden by default) -->
     <div id="legendPanel" class="panel legend-panel">
       <div class="legend-title">Legend</div>
       <div class="legend-section">
@@ -128,19 +104,12 @@
         <div><span class="dot" style="background:#613d7c"></span> Day 5</div>
       </div>
       <div>
-        🍽️ Restaurant<br/>
-        🛍️ Market / Food Hall<br/>
-        🖼️ Museum<br/>
-        ⛪ Church / Cathedral<br/>
-        🗺️ Sights / Walks<br/>
-        🍷 Winery / Tasting<br/>
-        🏠 Home
+        🍽️ Restaurant<br/> 🛍️ Market<br/> 🖼️ Museum<br/> ⛪ Church<br/> 🗺️ Sights<br/> 🍷 Wine<br/> 🏠 Home
       </div>
     </div>
   </div>
 </div>
 
-<!-- PLAN TAB -->
 <div id="planTab" class="tab-content">
   <div id="plan">
     <h3>Trip Plan</h3>
@@ -149,234 +118,192 @@
 </div>
 
 <script>
-/* ---------- Tabs ---------- */
+/* ===================== Tabs ===================== */
 document.querySelectorAll(".tab").forEach(tab=>{
   tab.addEventListener("click", ()=>{
     document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
     document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.tab).classList.add("active");
-    // Invalidate map when returning to map tab
-    if(tab.dataset.tab === "mapTab"){ setTimeout(()=>map.invalidateSize(), 100); }
+    if(tab.dataset.tab==="mapTab"){ setTimeout(()=>map.invalidateSize(),100); }
   });
 });
 
-/* ---------- Map ---------- */
-const map = L.map("map", {center:[45.764, 4.8357], zoom:13});
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution:"© OpenStreetMap"}).addTo(map);
+/* ===================== Map ===================== */
+const map=L.map("map",{center:[45.764,4.8357],zoom:13});
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
 
-/* Toggle panels */
-const filtersToggle = document.getElementById("filtersToggle");
-const legendToggle  = document.getElementById("legendToggle");
-const filtersPanel  = document.getElementById("filtersPanel");
-const legendPanel   = document.getElementById("legendPanel");
+/* Toggles (hidden by default) */
+document.getElementById("filtersToggle").onclick=()=>document.getElementById("filtersPanel").classList.toggle("open");
+document.getElementById("legendToggle").onclick =()=>document.getElementById("legendPanel").classList.toggle("open");
 
-filtersToggle.addEventListener("click", ()=>{
-  filtersPanel.classList.toggle("open");
-  setTimeout(()=>map.invalidateSize(), 280);
-});
-legendToggle.addEventListener("click", ()=>{
-  legendPanel.classList.toggle("open");
-  setTimeout(()=>map.invalidateSize(), 280);
-});
-
-/* Day colors + category icons */
-const dayColors = {day1:"#d9534f", day2:"#0275d8", day3:"#5cb85c", day4:"#f0ad4e", day5:"#613d7c"};
-const catIconNames = {
-  sight:"fa-eye",
-  museum:"fa-university",
-  church:"fa-institution",
-  restaurant:"fa-cutlery",
-  market:"fa-shopping-cart",
-  wine:"fa-glass",
-  home:"fa-home"
-};
-function getIcon(category, day){
-  // Map markerColor to leaflet-awesome-markers presets (rough matches)
-  const colorMap = { "#d9534f":"red", "#0275d8":"blue", "#5cb85c":"green", "#f0ad4e":"orange", "#613d7c":"purple" };
-  const markerColor = colorMap[dayColors[day]] || "cadetblue";
-  return L.AwesomeMarkers.icon({
-    icon: catIconNames[category] || "fa-map-marker",
-    markerColor,
-    prefix:"fa",
-    iconColor:"white"
-  });
+/* ===================== Colors & Icons ===================== */
+const dayColors={day1:"#d9534f",day2:"#0275d8",day3:"#5cb85c",day4:"#f0ad4e",day5:"#613d7c"};
+const colorMap={"#d9534f":"red","#0275d8":"blue","#5cb85c":"green","#f0ad4e":"orange","#613d7c":"purple"};
+const catIconNames={sight:"fa-eye",museum:"fa-university",church:"fa-institution",restaurant:"fa-cutlery",market:"fa-shopping-cart",wine:"fa-glass",home:"fa-home"};
+function getIcon(cat,day){
+  if(cat==="home"){return L.AwesomeMarkers.icon({icon:"fa-home",markerColor:"black",prefix:"fa",iconColor:"white"});}
+  return L.AwesomeMarkers.icon({icon:catIconNames[cat]||"fa-map-marker",markerColor:colorMap[dayColors[day]]||"cadetblue",prefix:"fa",iconColor:"white"});
 }
-const catEmoji = {sight:"🗺️", museum:"🖼️", church:"⛪", restaurant:"🍽️", market:"🛍️", wine:"🍷", home:"🏠"};
 
-/* ---------- DATA ---------- */
-/* Home */
-const HOME = {lat:45.7703, lng:4.8328, name:"Home: 12 Rue Burdeau, 69001 Lyon", cat:"home"};
-
-/* Helper */
+/* ===================== Helpers ===================== */
 function P(lat,lng,name,cat,opts={}){return Object.assign({lat,lng,name,cat},opts);}
+function navLinks(lat,lng){return {g:`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,a:`http://maps.apple.com/?daddr=${lat},${lng}`};}
+function popupHTML(p,day){const n=navLinks(p.lat,p.lng);return `<b>${p.name}</b><br>${day && day.startsWith("day")?`Day ${day.replace("day","")}`:""}
+${p.dur?`<br>⏱ ${p.dur}`:""}${p.notes?`<br>${p.notes}`:""}${p.phone?`<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`:""}${p.website?`<br>🌐 <a href="${p.website}" target="_blank">Website</a>`:""}${p.instagram?`<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`:""}<br>🧭 <a href="${n.g}" target="_blank">Google Maps</a> | <a href="${n.a}" target="_blank">Apple Maps</a>`;}
 
-/* Plan A (Lyon + Beaujolais) — 5 days */
-const PlanA = {
-  day1: [
-    P(45.7629,4.8270,"Vieux Lyon (Old Town)","sight",{notes:"Explore Renaissance streets & traboules", dur:"1.5h"}),
-    P(45.7673,4.8346,"Musée des Beaux-Arts de Lyon","museum",{notes:"Book tickets online", dur:"2h", website:"https://mba-lyon.fr", phone:"+33 4 72 10 17 40"}),
-    P(45.7678,4.8343,"Place des Terreaux & Hôtel de Ville","sight",{notes:"Photo stop", dur:"20min"}),
-    P(45.7638,4.8345,"Le Bouchon des Filles","restaurant",{notes:"Reservation recommended", dur:"Dinner 1.5–2h", phone:"+33 4 78 29 33 63", website:"https://bouchondesfilles.fr", instagram:"https://instagram.com/lebouchondesfilles"})
-  ],
-  day2: [
-    P(45.7761,4.8272,"Croix-Rousse Market (Bd de la Croix-Rousse)","market",{notes:"Morning market, produce & snacks", dur:"1–1.5h"}),
-    P(45.7792,4.8278,"Mur des Canuts (Fresco)","sight",{notes:"Iconic trompe-l’oeil mural", dur:"20min"}),
-    P(45.7634,4.8597,"Les Halles de Lyon Paul Bocuse","market",{notes:"Food hall tastings", dur:"1.5h", website:"https://halles-de-lyon-paulbocuse.com"}),
-    P(45.7482,4.8258,"Brasserie Georges","restaurant",{notes:"Book table (popular)", dur:"Dinner 1.5–2h", phone:"+33 4 72 56 54 54", website:"https://brasseriegeorges.com", instagram:"https://instagram.com/brasseriegeorges"})
-  ],
-  day3: [
-    P(45.7622,4.8229,"Basilica of Notre-Dame de Fourvière","church",{notes:"Free entry; panoramic views", dur:"1–1.5h", website:"https://fourviere.org"}),
-    P(45.7584,4.8188,"Roman Theatres of Fourvière","sight",{notes:"Archaeology site", dur:"45–60min", website:"https://lugdunum.grandlyon.com"}),
-    P(45.7625,4.8272,"Musée Gadagne (History & Puppetry)","museum",{notes:"Consider advance tickets", dur:"1.5–2h", website:"https://musees-gadagne.fr"}),
-    P(45.7613,4.8347,"Traboules self-guided walk (Presqu’île/Vieux-Lyon)","sight",{notes:"Historic covered passages", dur:"45–60min"}),
-    P(45.7477,4.8269,"Café Comptoir Abel","restaurant",{notes:"Classic bouchon, reserve ahead", dur:"Dinner 1.5–2h", phone:"+33 4 78 37 46 18"})
-  ],
-  day4: [
-    P(46.2030,4.7060,"Château de Pizay (Beaujolais)","wine",{notes:"Tasting — reservation required", dur:"1.5h", website:"https://chateau-pizay.com", phone:"+33 4 74 66 26 10"}),
-    P(46.2078,4.7139,"Domaine des Nugues","wine",{notes:"Tasting — book ahead", dur:"1–1.5h", website:"https://domainedesnugues.com"}),
-    P(46.2445,4.7472,"Maison Jean Loron (Museum & Tasting)","wine",{notes:"Tasting — book ahead", dur:"1–1.5h", website:"https://www.jeanloron.com"})
-  ],
-  day5: [
-    P(45.7772,4.8520,"Parc de la Tête d’Or (lake & gardens)","sight",{notes:"Relaxing stroll; finish by ~13:30", dur:"1.5–2h", website:"https://www.lyon.fr/lieu/parc-de-la-tete-dor"}),
-    P(45.7685,4.8363,"Chez Paul (lunch)","restaurant",{notes:"Casual bouchon; aim for early lunch", dur:"45–60min", phone:"+33 4 78 92 19 61"})
-  ]
+/* ===================== Home ===================== */
+const HOME={lat:45.77099,lng:4.83384,name:"Home: 12 Rue Burdeau, 69001 Lyon",cat:"home"};
+
+/* ===================== Reusable POIs ===================== */
+const POI={
+  // Sights & areas
+  vieuxLyon: P(45.7629,4.8270,"Vieux Lyon (Old Town)","sight",{dur:"1.5–2h",notes:"Renaissance alleys & traboules"}),
+  traboules: P(45.7613,4.8347,"Traboules (self-guided)","sight",{dur:"45–60min",notes:"Historic covered passages"}),
+  terreaux:  P(45.7678,4.8343,"Place des Terreaux & Hôtel de Ville","sight",{dur:"20min",notes:"Bartholdi Fountain"}),
+  opera:     P(45.7670,4.8356,"Opéra de Lyon (exterior)","sight",{dur:"15–20min",website:"https://www.opera-lyon.com"}),
+  bellecour: P(45.7570,4.8320,"Place Bellecour","sight",{dur:"20min"}),
+  rueRepub:  P(45.7610,4.8355,"Rue de la République stroll","sight",{dur:"45min"}),
+  merciere:  P(45.7628,4.8333,"Rue Mercière cafés","sight",{dur:"30–45min"}),
+  murCanuts: P(45.7792,4.8278,"Mur des Canuts (trompe-l’œil)","sight",{dur:"20min"}),
+  belvedere: P(45.7625,4.8228,"Fourvière belvedere (panorama)","sight",{dur:"15–20min"}),
+  confluenceWalk:P(45.7336,4.8207,"Confluence waterfront walk","sight",{dur:"45–60min"}),
+  saoneQuays:P(45.7632,4.8279,"Saône riverside walk","sight",{dur:"30–45min"}),
+  teteDor:   P(45.7772,4.8520,"Parc de la Tête d’Or (lake & gardens)","sight",{dur:"1.5–2h",website:"https://www.lyon.fr/lieu/parc-de-la-tete-dor"}),
+
+  // Churches
+  fourviere: P(45.7622,4.8229,"Basilica of Notre-Dame de Fourvière","church",{dur:"1–1.5h",notes:"Free entry; panoramic view",website:"https://fourviere.org"}),
+  cathedral: P(45.7576,4.8241,"Cathédrale Saint-Jean-Baptiste","church",{dur:"30–45min"}),
+
+  // Museums
+  mba:       P(45.7673,4.8346,"Musée des Beaux-Arts de Lyon","museum",{dur:"2h",notes:"Book tickets online",website:"https://mba-lyon.fr",phone:"+33 4 72 10 17 40"}),
+  gadagne:   P(45.7625,4.8272,"Musées Gadagne (History & Puppetry)","museum",{dur:"1.5–2h",notes:"Consider tickets in advance",website:"https://musees-gadagne.fr"}),
+  tissus:    P(45.7559,4.8322,"Musée des Tissus et des Arts Décoratifs","museum",{dur:"1.5–2h",website:"https://www.museedestissus.fr"}),
+  confluences:P(45.7331,4.8196,"Musée des Confluences","museum",{dur:"2–2.5h",notes:"Book online; striking architecture",website:"https://www.museedesconfluences.fr"}),
+  lugdunum:  P(45.7584,4.8188,"Lugdunum (Roman Theatres & Museum)","museum",{dur:"1.5–2h",website:"https://lugdunum.grandlyon.com"}),
+  lumiere:   P(45.7458,4.8725,"Institut Lumière (cinema museum)","museum",{dur:"1.5h",website:"https://www.institut-lumiere.org"}),
+
+  // Markets
+  halles:    P(45.7634,4.8597,"Les Halles de Lyon Paul Bocuse","market",{dur:"1.5h",notes:"Oysters/charcuterie stops",website:"https://halles-de-lyon-paulbocuse.com"}),
+  croixMarket:P(45.7761,4.8272,"Croix-Rousse Market","market",{dur:"1–1.5h"}),
+  stAntoine: P(45.7606,4.8326,"Marché Saint-Antoine (riverside)","market",{dur:"1h",notes:"Morning farmers’ market"}),
+
+  // Restaurants (bouchons & brasseries)
+  bouchonFilles: P(45.7692,4.8344,"Le Bouchon des Filles","restaurant",{dur:"1.5–2h dinner",notes:"Reservation recommended",phone:"+33 4 78 29 33 63",website:"https://bouchondesfilles.fr",instagram:"https://instagram.com/lebouchondesfilles"}),
+  comptoirAbel:  P(45.7477,4.8269,"Café Comptoir Abel","restaurant",{dur:"1.5–2h dinner",notes:"Reserve ahead",phone:"+33 4 78 37 46 18"}),
+  poelonDor:     P(45.7515,4.8288,"Le Poêlon d’Or","restaurant",{dur:"1.5–2h dinner",notes:"Traditional bouchon; book",phone:"+33 4 78 37 65 60",website:"https://lepoelondor.fr"}),
+  lesAdrets:     P(45.7616,4.8265,"Les Adrets","restaurant",{dur:"1.5–2h",notes:"Traditional bouchon; reserve",phone:"+33 4 78 38 24 30",website:"http://www.lesadrets-lyon.fr"}),
+  bouchonTupin:  P(45.7621,4.8336,"Bouchon Tupin","restaurant",{dur:"1.5–2h",notes:"Reserve ahead",phone:"+33 4 78 28 62 72",instagram:"https://instagram.com/bouchontupin"}),
+  brasserieGeorges:P(45.7482,4.8258,"Brasserie Georges","restaurant",{dur:"1.5–2h",notes:"Historic brasserie; book",phone:"+33 4 72 56 54 54",website:"https://brasseriegeorges.com",instagram:"https://instagram.com/brasseriegeorges"}),
+  brasserieBrotteaux:P(45.7646,4.8597,"Brasserie des Brotteaux","restaurant",{dur:"1.5–2h",notes:"Art nouveau setting; reserve",phone:"+33 4 78 54 17 23",website:"https://brasseriedesbrotteaux.com"}),
+  prairial:      P(45.7673,4.8346,"Prairial (Michelin ★)","restaurant",{dur:"2–2.5h",notes:"Reserve well ahead",phone:"+33 4 72 60 00 42",website:"https://prairial-restaurant.com",instagram:"https://www.instagram.com/prairialrestaurant"}),
+  neuviemeArt:   P(45.7701,4.8502,"Le Neuvième Art (Michelin ★★)","restaurant",{dur:"2.5h",notes:"Reserve far in advance",website:"https://www.leneuviemeart.com"}),
+  chezPaul:      P(45.7685,4.8363,"Chez Paul (casual lunch)","restaurant",{dur:"45–60min",phone:"+33 4 78 92 19 61"}),
+  pignol:        P(45.7644,4.8367,"Pignol (light lunch/pastry)","restaurant",{dur:"45–60min",phone:"+33 4 78 42 30 36",website:"https://www.pignol.fr"}),
+
+  // Wine bars / cavistes in Lyon
+  anticWine:     P(45.7626,4.8274,"Antic Wine (caviste)","wine",{dur:"30–45min",website:"https://anticwine.fr"}),
+  caveACote:     P(45.7613,4.8347,"La Cave d’à Côté","wine",{dur:"45–60min"}),
+  leBallon:      P(45.7744,4.8275,"Le Ballon (wine bar)","wine",{dur:"1h"}),
+
+  // Beaujolais wineries
+  pizay:         P(46.2030,4.7060,"Château de Pizay (Beaujolais)","wine",{dur:"1.5–2h tasting",notes:"Reservation required",website:"https://chateau-pizay.com",phone:"+33 4 74 66 26 10"}),
+  nugues:        P(46.2078,4.7139,"Domaine des Nugues","wine",{dur:"1–1.5h tasting",notes:"Book ahead",website:"https://domainedesnugues.com"}),
+  jeanLoron:     P(46.2445,4.7472,"Maison Jean Loron","wine",{dur:"1–1.5h tasting",notes:"Book ahead",website:"https://www.jeanloron.com"})
 };
 
-/* Plan B (Lyon only) — 5 days, Day 4 packed with more Lyon sights */
-const PlanB = {
-  day1: [
-    P(45.7629,4.8270,"Vieux Lyon (Old Town)","sight",{notes:"Explore Renaissance streets & traboules", dur:"1.5h"}),
-    P(45.7673,4.8346,"Musée des Beaux-Arts de Lyon","museum",{notes:"Book tickets online", dur:"2h", website:"https://mba-lyon.fr", phone:"+33 4 72 10 17 40"}),
-    P(45.7638,4.8345,"Le Bouchon des Filles","restaurant",{notes:"Reservation recommended", dur:"Dinner 1.5–2h", phone:"+33 4 78 29 33 63", website:"https://bouchondesfilles.fr", instagram:"https://instagram.com/lebouchondesfilles"})
-  ],
-  day2: [
-    P(45.7761,4.8272,"Croix-Rousse Market","market",{notes:"Morning market, produce & snacks", dur:"1–1.5h"}),
-    P(45.7634,4.8597,"Les Halles de Lyon Paul Bocuse","market",{notes:"Food hall tastings", dur:"1.5h", website:"https://halles-de-lyon-paulbocuse.com"}),
-    P(45.7680,4.8357,"Opéra de Lyon (exterior)","sight",{notes:"Photo stop by Hôtel de Ville", dur:"15–20min"}),
-    P(45.7482,4.8258,"Brasserie Georges","restaurant",{notes:"Book table (popular)", dur:"Dinner 1.5–2h", phone:"+33 4 72 56 54 54", website:"https://brasseriegeorges.com"})
-  ],
-  day3: [
-    P(45.7622,4.8229,"Basilica of Notre-Dame de Fourvière","church",{notes:"Free entry; city views", dur:"1–1.5h", website:"https://fourviere.org"}),
-    P(45.7584,4.8188,"Roman Theatres of Fourvière","sight",{notes:"Archaeology site", dur:"45–60min", website:"https://lugdunum.grandlyon.com"}),
-    P(45.7625,4.8272,"Musée Gadagne (History & Puppetry)","museum",{notes:"Consider advance tickets", dur:"1.5–2h", website:"https://musees-gadagne.fr"}),
-    P(45.7477,4.8269,"Café Comptoir Abel","restaurant",{notes:"Reserve ahead", dur:"Dinner 1.5–2h", phone:"+33 4 78 37 46 18"})
-  ],
-  day4: [
-    P(45.7331,4.8196,"Musée des Confluences","museum",{notes:"Book online; striking architecture", dur:"2–2.5h", website:"https://www.museedesconfluences.fr"}),
-    P(45.7336,4.8207,"Confluence District (walk)","sight",{notes:"Modern waterfront & shopping", dur:"45–60min"}),
-    P(45.7576,4.8241,"Lyon Cathedral (Saint-Jean)","church",{notes:"Gothic cathedral", dur:"30–45min"}),
-    P(45.7630,4.8357,"Place Bellecour → Rue Mercière stroll","sight",{notes:"Presqu’île shopping/food street", dur:"45–60min"}),
-    P(45.7646,4.8597,"Brasserie des Brotteaux","restaurant",{notes:"Dinner; reservation advised", dur:"1.5–2h", phone:"+33 4 78 54 17 23"})
-  ],
-  day5: [
-    P(45.7772,4.8520,"Parc de la Tête d’Or (lake & gardens)","sight",{notes:"Relaxing stroll; finish by ~13:30", dur:"1.5–2h", website:"https://www.lyon.fr/lieu/parc-de-la-tete-dor"}),
-    P(45.7685,4.8363,"Chez Paul (lunch)","restaurant",{notes:"Casual bouchon; aim for early lunch", dur:"45–60min", phone:"+33 4 78 92 19 61"})
-  ]
+/* ===================== Plans ===================== */
+const PlanA={ // Lyon + Beaujolais
+  day1:[POI.vieuxLyon,POI.traboules,POI.cathedral,POI.fourviere,POI.terreaux,POI.mba,POI.bouchonFilles],
+  day2:[POI.croixMarket,POI.murCanuts,POI.halles,POI.anticWine,POI.brasserieGeorges],
+  day3:[POI.lugdunum,POI.gadagne,POI.opera,POI.rueRepub,POI.prairial],
+  day4:[POI.pizay,POI.nugues,POI.jeanLoron],
+  day5:[Object.assign({},POI.teteDor,{notes:"Relaxing stroll • finish by ~13:30"}),Object.assign({},POI.pignol,{name:"Pignol (early lunch)"})]
 };
 
-/* Bundle plans */
-const plans = { A: PlanA, B: PlanB };
+const PlanB={ // Lyon only (more city time)
+  day1:[POI.vieuxLyon,POI.traboules,POI.cathedral,POI.fourviere,POI.terreaux,POI.mba,POI.bouchonFilles],
+  day2:[POI.croixMarket,POI.murCanuts,POI.halles,POI.anticWine,POI.brasserieGeorges],
+  day3:[POI.lugdunum,POI.gadagne,POI.tissus,POI.confluences,POI.confluenceWalk,POI.brasserieBrotteaux],
+  day4:[POI.bellecour,POI.rueRepub,POI.merciere,POI.opera,POI.lumiere,POI.neuviemeArt],
+  day5:[Object.assign({},POI.teteDor,{notes:"Relaxing stroll • finish by ~13:30"}),Object.assign({},POI.chezPaul,{name:"Chez Paul (early lunch)"})]
+};
 
-/* ---------- Rendering ---------- */
-let currentPlan = "A";
-let currentDay = "all";
-let currentCat = "all";
-let markers = [];
+const plans={A:PlanA,B:PlanB};
 
-function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers = []; }
-function addHome(){
-  const hm = L.marker([HOME.lat, HOME.lng], {icon:getIcon("home","day1")})
-    .addTo(map)
-    .bindPopup(`<b>${HOME.name}</b>`);
-  markers.push(hm);
-}
-
-function popupHTML(p, dayKey){
-  let h = `<b>${p.name}</b><br>Day ${dayKey.replace("day","")}`;
-  if(p.dur)  h += `<br>⏱ ${p.dur}`;
-  if(p.notes) h += `<br>${p.notes}`;
-  if(p.phone) h += `<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`;
-  if(p.website) h += `<br>🌐 <a href="${p.website}" target="_blank">Website</a>`;
-  if(p.instagram) h += `<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`;
-  return h;
-}
+/* ===================== Render ===================== */
+let currentPlan="A",currentDay="all",currentCat="all",markers=[];
+function clearMarkers(){markers.forEach(m=>map.removeLayer(m));markers=[];}
+function addHome(){const hm=L.marker([HOME.lat,HOME.lng],{icon:getIcon("home","day1")}).addTo(map).bindPopup(popupHTML(HOME,""));markers.push(hm);}
 
 function refreshMap(){
-  clearMarkers();
-  addHome();
-  const plan = plans[currentPlan];
-
+  clearMarkers(); addHome();
+  const plan=plans[currentPlan];
   for(const dayKey in plan){
-    if(currentDay !== "all" && currentDay !== dayKey) continue;
-    plan[dayKey].forEach(poi=>{
-      if(currentCat !== "all" && currentCat !== poi.cat) return;
-      const marker = L.marker([poi.lat, poi.lng], {icon: getIcon(poi.cat, dayKey)})
-        .addTo(map)
-        .bindPopup(popupHTML(poi, dayKey));
+    if(currentDay!=="all" && currentDay!==dayKey) continue;
+    plan[dayKey].forEach(p=>{
+      if(currentCat!=="all" && currentCat!==p.cat) return;
+      const marker=L.marker([p.lat,p.lng],{icon:getIcon(p.cat,dayKey)}).addTo(map).bindPopup(popupHTML(p,dayKey));
       markers.push(marker);
     });
   }
+  if(markers.length>0){const group=L.featureGroup(markers); map.fitBounds(group.getBounds().pad(0.2));}
   renderPlanText();
 }
 
 function renderPlanText(){
-  const plan = plans[currentPlan];
-  const container = document.getElementById("planDetails");
-  container.innerHTML = "";
-
+  const plan=plans[currentPlan];
+  const c=document.getElementById("planDetails"); c.innerHTML="";
   for(const dayKey of ["day1","day2","day3","day4","day5"]){
     if(!plan[dayKey]) continue;
-    if(currentDay !== "all" && currentDay !== dayKey) continue;
+    if(currentDay!=="all" && currentDay!==dayKey) continue;
 
-    const dayDiv = document.createElement("div");
-    dayDiv.className = "day-section";
-    dayDiv.innerHTML = `<h4 class="day-title">Day ${dayKey.replace("day","")}</h4>`;
-
-    const listDiv = document.createElement("div");
+    const dayDiv=document.createElement("div"); dayDiv.className="day-section";
+    dayDiv.innerHTML=`<h4 class="day-title">Day ${dayKey.replace("day","")}</h4>`;
+    let prev=null;
     plan[dayKey].forEach(p=>{
-      if(currentCat !== "all" && currentCat !== p.cat) return;
-      const item = document.createElement("div");
-      item.className = "poi";
-      item.innerHTML = `
-        <div class="name">${(catEmoji[p.cat]||"")} ${p.name}
-          <span class="badge">${p.cat}</span>
+      if(currentCat!=="all" && currentCat!==p.cat) return;
+      const n=navLinks(p.lat,p.lng);
+      // heuristic walking time between city stops
+      let walk="";
+      const cityDay = !(currentPlan==="A" && dayKey==="day4"); // winery day excluded
+      if(prev && cityDay){ walk = " • 🚶 10–20 min walk (est.)"; }
+      const item=document.createElement("div"); item.className="poi";
+      item.innerHTML=`
+        <div class="name">${p.name}
+          <span style="display:flex;gap:8px;align-items:center;">
+            <span class="badge">${p.cat}</span>
+            <a class="openmaps" href="${n.g}" target="_blank">🧭 Open</a>
+          </span>
         </div>
         <div class="meta">
-          ${p.dur ? `⏱ ${p.dur}` : ""}${p.dur && p.notes ? " • " : ""}${p.notes || ""}
+          ${p.dur?`⏱ ${p.dur}`:""} ${p.notes?`• ${p.notes}`:""}${walk}
         </div>
         <div class="links">
-          ${p.phone ? `☎ <a href="tel:${p.phone}">${p.phone}</a>` : ""}
-          ${p.website ? `🌐 <a href="${p.website}" target="_blank">Website</a>` : ""}
-          ${p.instagram ? `📸 <a href="${p.instagram}" target="_blank">Instagram</a>` : ""}
+          ${p.phone?`☎ <a href="tel:${p.phone}">${p.phone}</a>`:""}
+          ${p.website?`🌐 <a href="${p.website}" target="_blank">Website</a>`:""}
+          ${p.instagram?`📸 <a href="${p.instagram}" target="_blank">Instagram</a>`:""}
+          🧭 <a href="${n.g}" target="_blank">Google Maps</a> | <a href="${n.a}" target="_blank">Apple Maps</a>
         </div>`;
-      listDiv.appendChild(item);
+      dayDiv.appendChild(item); prev=p;
     });
-
-    dayDiv.appendChild(listDiv);
-    container.appendChild(dayDiv);
+    c.appendChild(dayDiv);
   }
 }
 
-/* ---------- Selectors ---------- */
-document.getElementById("planSelect").addEventListener("change", e=>{
-  currentPlan = e.target.value; refreshMap();
-});
-document.getElementById("daySelect").addEventListener("change", e=>{
-  currentDay = e.target.value; refreshMap();
-});
-document.getElementById("catSelect").addEventListener("change", e=>{
-  currentCat = e.target.value; refreshMap();
-});
-document.getElementById("clearFilters").addEventListener("click", ()=>{
+/* ===================== Filters ===================== */
+document.getElementById("planSelect").onchange=e=>{currentPlan=e.target.value;refreshMap();};
+document.getElementById("daySelect").onchange =e=>{currentDay =e.target.value;refreshMap();};
+document.getElementById("catSelect").onchange =e=>{currentCat =e.target.value;refreshMap();};
+document.getElementById("clearFilters").onclick=()=>{
   currentPlan="A"; currentDay="all"; currentCat="all";
   document.getElementById("planSelect").value="A";
   document.getElementById("daySelect").value="all";
   document.getElementById("catSelect").value="all";
   refreshMap();
-});
+};
 
-/* ---------- Init ---------- */
+/* ===================== Init ===================== */
 refreshMap();
 </script>
 </body>
