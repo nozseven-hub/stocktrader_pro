@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Lyon Travel Guide</title>
+<title>Lyon Travel Guide — Great App (with Routes)</title>
 
+<!-- Leaflet & Awesome Markers & Font Awesome -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
@@ -55,11 +56,13 @@
 </head>
 <body>
 
+<!-- Tabs -->
 <div class="tabs">
   <div class="tab active" data-tab="mapTab">Map</div>
   <div class="tab" data-tab="planTab">Plan</div>
 </div>
 
+<!-- MAP TAB -->
 <div id="mapTab" class="tab-content active">
   <div id="map">
     <button id="filtersToggle" class="toggle-btn">⚙️ Filters</button>
@@ -110,6 +113,7 @@
   </div>
 </div>
 
+<!-- PLAN TAB -->
 <div id="planTab" class="tab-content">
   <div id="plan">
     <h3>Trip Plan</h3>
@@ -125,7 +129,7 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.tab).classList.add("active");
-    if(tab.dataset.tab==="mapTab"){ setTimeout(()=>map.invalidateSize(),100); }
+    if(tab.dataset.tab==="mapTab"){ setTimeout(()=>map.invalidateSize(), 120); }
   });
 });
 
@@ -149,8 +153,16 @@ function getIcon(cat,day){
 /* ===================== Helpers ===================== */
 function P(lat,lng,name,cat,opts={}){return Object.assign({lat,lng,name,cat},opts);}
 function navLinks(lat,lng){return {g:`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,a:`http://maps.apple.com/?daddr=${lat},${lng}`};}
-function popupHTML(p,day){const n=navLinks(p.lat,p.lng);return `<b>${p.name}</b><br>${day && day.startsWith("day")?`Day ${day.replace("day","")}`:""}
-${p.dur?`<br>⏱ ${p.dur}`:""}${p.notes?`<br>${p.notes}`:""}${p.phone?`<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`:""}${p.website?`<br>🌐 <a href="${p.website}" target="_blank">Website</a>`:""}${p.instagram?`<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`:""}<br>🧭 <a href="${n.g}" target="_blank">Google Maps</a> | <a href="${n.a}" target="_blank">Apple Maps</a>`;}
+function popupHTML(p,day){
+  const n=navLinks(p.lat,p.lng);
+  return `<b>${p.name}</b>${day&&day.startsWith("day")?`<br>Day ${day.replace("day","")}`:""}
+          ${p.dur?`<br>⏱ ${p.dur}`:""}
+          ${p.notes?`<br>${p.notes}`:""}
+          ${p.phone?`<br>☎ <a href="tel:${p.phone}">${p.phone}</a>`:""}
+          ${p.website?`<br>🌐 <a href="${p.website}" target="_blank">Website</a>`:""}
+          ${p.instagram?`<br>📸 <a href="${p.instagram}" target="_blank">Instagram</a>`:""}
+          <br>🧭 <a href="${n.g}" target="_blank">Google Maps</a> | <a href="${n.a}" target="_blank">Apple Maps</a>`;
+}
 
 /* ===================== Home ===================== */
 const HOME={lat:45.77099,lng:4.83384,name:"Home: 12 Rue Burdeau, 69001 Lyon",cat:"home"};
@@ -217,11 +229,11 @@ const PlanA={ // Lyon + Beaujolais
   day1:[POI.vieuxLyon,POI.traboules,POI.cathedral,POI.fourviere,POI.terreaux,POI.mba,POI.bouchonFilles],
   day2:[POI.croixMarket,POI.murCanuts,POI.halles,POI.anticWine,POI.brasserieGeorges],
   day3:[POI.lugdunum,POI.gadagne,POI.opera,POI.rueRepub,POI.prairial],
-  day4:[POI.pizay,POI.nugues,POI.jeanLoron],
+  day4:[POI.pizay,POI.nugues,POI.jeanLoron], // Beaujolais
   day5:[Object.assign({},POI.teteDor,{notes:"Relaxing stroll • finish by ~13:30"}),Object.assign({},POI.pignol,{name:"Pignol (early lunch)"})]
 };
 
-const PlanB={ // Lyon only (more city time)
+const PlanB={ // Lyon only (more city depth)
   day1:[POI.vieuxLyon,POI.traboules,POI.cathedral,POI.fourviere,POI.terreaux,POI.mba,POI.bouchonFilles],
   day2:[POI.croixMarket,POI.murCanuts,POI.halles,POI.anticWine,POI.brasserieGeorges],
   day3:[POI.lugdunum,POI.gadagne,POI.tissus,POI.confluences,POI.confluenceWalk,POI.brasserieBrotteaux],
@@ -231,23 +243,69 @@ const PlanB={ // Lyon only (more city time)
 
 const plans={A:PlanA,B:PlanB};
 
-/* ===================== Render ===================== */
+/* ===================== Routes Layer ===================== */
 let currentPlan="A",currentDay="all",currentCat="all",markers=[];
-function clearMarkers(){markers.forEach(m=>map.removeLayer(m));markers=[];}
-function addHome(){const hm=L.marker([HOME.lat,HOME.lng],{icon:getIcon("home","day1")}).addTo(map).bindPopup(popupHTML(HOME,""));markers.push(hm);}
+let routeLayer=null;    // polyline
+let dotLayer=null;      // small dots at each stop
 
+function clearOverlays(){
+  if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; }
+  if(dotLayer){ map.removeLayer(dotLayer); dotLayer=null; }
+}
+
+function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers=[]; }
+
+function addHome(){
+  const hm=L.marker([HOME.lat,HOME.lng],{icon:getIcon("home","day1")})
+    .addTo(map)
+    .bindPopup(popupHTML(HOME,""));
+  markers.push(hm);
+}
+
+function drawRouteForDay(coords){
+  if(coords.length<2) return;
+  // Polyline (dashed red)
+  routeLayer=L.polyline(coords,{
+    color:"red", weight:3, opacity:0.9, dashArray:"6,6", lineCap:"round", lineJoin:"round"
+  }).addTo(map);
+  // Dots at each stop
+  dotLayer=L.layerGroup(coords.map(c=>L.circleMarker(c,{
+    radius:4, color:"red", fillColor:"red", fillOpacity:0.9, weight:1
+  }))).addTo(map);
+}
+
+/* ===================== Render ===================== */
 function refreshMap(){
-  clearMarkers(); addHome();
+  clearMarkers(); clearOverlays(); addHome();
+
   const plan=plans[currentPlan];
+  const boundsPoints=[[HOME.lat,HOME.lng]];
+  let routeCoords=[];
+
   for(const dayKey in plan){
     if(currentDay!=="all" && currentDay!==dayKey) continue;
+
     plan[dayKey].forEach(p=>{
       if(currentCat!=="all" && currentCat!==p.cat) return;
       const marker=L.marker([p.lat,p.lng],{icon:getIcon(p.cat,dayKey)}).addTo(map).bindPopup(popupHTML(p,dayKey));
       markers.push(marker);
+      boundsPoints.push([p.lat,p.lng]);
+
+      // If a single day is selected, collect coords in order for route
+      if(currentDay!=="all"){ routeCoords.push([p.lat,p.lng]); }
     });
   }
-  if(markers.length>0){const group=L.featureGroup(markers); map.fitBounds(group.getBounds().pad(0.2));}
+
+  if(boundsPoints.length>1){
+    const group=L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+
+  // Draw route only when a single day is selected
+  if(currentDay!=="all" && routeCoords.length>1){
+    drawRouteForDay(routeCoords);
+  }
+
   renderPlanText();
 }
 
@@ -264,10 +322,10 @@ function renderPlanText(){
     plan[dayKey].forEach(p=>{
       if(currentCat!=="all" && currentCat!==p.cat) return;
       const n=navLinks(p.lat,p.lng);
-      // heuristic walking time between city stops
-      let walk="";
-      const cityDay = !(currentPlan==="A" && dayKey==="day4"); // winery day excluded
-      if(prev && cityDay){ walk = " • 🚶 10–20 min walk (est.)"; }
+      // simple walk heuristic for city days (kept for quick context)
+      let walkHint="";
+      const isWineryDay=(currentPlan==="A" && dayKey==="day4");
+      if(prev && !isWineryDay){ walkHint=" • 🚶 10–20 min walk (est.)"; }
       const item=document.createElement("div"); item.className="poi";
       item.innerHTML=`
         <div class="name">${p.name}
@@ -277,7 +335,7 @@ function renderPlanText(){
           </span>
         </div>
         <div class="meta">
-          ${p.dur?`⏱ ${p.dur}`:""} ${p.notes?`• ${p.notes}`:""}${walk}
+          ${p.dur?`⏱ ${p.dur}`:""} ${p.notes?`• ${p.notes}`:""}${walkHint}
         </div>
         <div class="links">
           ${p.phone?`☎ <a href="tel:${p.phone}">${p.phone}</a>`:""}
@@ -306,5 +364,6 @@ document.getElementById("clearFilters").onclick=()=>{
 /* ===================== Init ===================== */
 refreshMap();
 </script>
+
 </body>
 </html>
